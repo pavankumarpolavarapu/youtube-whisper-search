@@ -1,4 +1,5 @@
 *.env
 videos/*.mp4
+transcribed/*.txt
 *.pyc
 *.swp
