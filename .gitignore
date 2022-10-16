@@ -1,0 +1,4 @@
+*.env
+videos/*.mp4
+*.pyc
+*.swp
