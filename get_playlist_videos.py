@@ -1,5 +1,5 @@
 import os
-import yt_dlp 
+import yt_dlp
 
 from pathlib import Path
 from typing import Optional, Sequence
@@ -11,13 +11,15 @@ import googleapiclient.errors
 
 scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
 
-def download_multiple_youtube_videos(playlist_videos: list[str, str]) -> list[str]:
+
+def download_multiple_youtube_videos(playlist_videos: list[str, str]) \
+                                        -> list[str]:
     downloaded_video_paths = []
     try:
         for item in playlist_videos:
             file_path = f"{os.getcwd()}/videos/{item[0]}.mp4"
             if not os.path.isfile(file_path):
-                if(download_single_youtube_video(item[1], file_path)):
+                if (download_single_youtube_video(item[1], file_path)):
                     downloaded_video_paths.append(file_path)
     except Exception as e:
         print("An exception occurred while downloading videos")
@@ -25,7 +27,8 @@ def download_multiple_youtube_videos(playlist_videos: list[str, str]) -> list[st
 
     return downloaded_video_paths
 
-def download_single_youtube_video(url: str,file_path: str) -> str:
+
+def download_single_youtube_video(url: str, file_path: str) -> str:
     """Save a YouTube video URL to mp3.
 
     Args:
@@ -37,7 +40,7 @@ def download_single_youtube_video(url: str,file_path: str) -> str:
 
     options = {
         'format': 'mp4',
-        'outtmpl': file_path 
+        'outtmpl': file_path
     }
 
     try:
@@ -45,17 +48,25 @@ def download_single_youtube_video(url: str,file_path: str) -> str:
             downloader.download(["" + url + ""])
     except Exception as e:
         raise
-    
+
     return file_path
 
-def get_google_api_client(api_service_name: str, api_version: str, developer_key: str) -> object:
+
+def get_google_api_client(api_service_name: str,
+                          api_version: str,
+                          developer_key: str
+                          ) -> object:
     service = googleapiclient.discovery.build(
         api_service_name, api_version, developerKey=developer_key)
 
     return service
-    
 
-def get_youtube_playlist_videos(service, playlist: str, page_token: str|None, playlist_videos: list[str, str]) -> list[str, str]:
+
+def get_youtube_playlist_videos(service: object,
+                                playlist: str,
+                                page_token: str | None,
+                                playlist_videos: list[str, str]
+                                ) -> list[str, str]:
 
     request = service.playlistItems().list(
         part="snippet,contentDetails",
@@ -65,35 +76,21 @@ def get_youtube_playlist_videos(service, playlist: str, page_token: str|None, pl
     )
 
     response = request.execute()
-    
+
     for item in response["items"]:
         videoId = item["contentDetails"]["videoId"]
         youtube_url = f"https://youtube.com/watch?v={videoId}"
-        
+
         playlist_videos.append([videoId, youtube_url])
 
     if 'nextPageToken' in response.keys():
-        playlist_videos = get_youtube_playlist_videos(service, playlist, response['nextPageToken'], playlist_videos)
+        playlist_videos = \
+                get_youtube_playlist_videos(service, playlist,
+                                            response['nextPageToken'],
+                                            playlist_videos)
 
     return playlist_videos
 
-def transcribe_single_video(video_file_path: Path, transcript_file_path: Path) -> int:
-
-    try:
-        result = model.transcribe(video_file_path)
-
-        if not os.path.isfile(transcript_file_path):
-            transcribe_video(video, videoId)
-
-            with open(transcript_file_path, 'w') as f:
-                for segment in result["segments"]:
-                    line = f"{segment['start']}:{segment['end']} {segment['text']}\n"
-                    f.write(line)
-    except Exception as e:
-        print("An exception has occurred", e.value)
-        return 1
-
-    return 0
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser()
@@ -102,20 +99,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     model = whisper.load_model("base")
-    
     api_service_name = "youtube"
     api_version = "v3"
 
-    service = get_google_api_client(api_service_name, api_version, developer_key)
+    service = \
+        get_google_api_client(api_service_name, api_version, developer_key)
 
-    if(service):
-        playlist_videos = get_youtube_playlist_videos(service, args.playlist_id, None, [])
-   
-    if(playlist_videos):
-        downloaded_video_paths = download_multiple_youtube_videos(playlist_videos)
-    
+    if (service):
+        playlist_videos = \
+            get_youtube_playlist_videos(service, args.playlist_id, None, [])
+
+    if (playlist_videos):
+        downloaded_video_paths = \
+                download_multiple_youtube_videos(playlist_videos)
+
     for video_path in downloaded_video_paths:
         print(video_path)
+
 
 if __name__ == "__main__":
     exit(main())

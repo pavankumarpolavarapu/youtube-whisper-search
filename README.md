@@ -20,5 +20,5 @@ python search.py [search_phrase]
 ripgrep is another useful tool, you can execute
 
 ```
-rg [search_phrase]
+rg [search_phrase] -g *.txt
 ```

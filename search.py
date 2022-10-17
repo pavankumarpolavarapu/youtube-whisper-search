@@ -2,6 +2,7 @@ import os
 import argparse
 from typing import Optional, Sequence
 
+
 def link(uri, label=None) -> str:
     if label is None:
         label = uri
@@ -11,6 +12,7 @@ def link(uri, label=None) -> str:
     escape_mask = '\033]8;{};{}\033\\{}\033]8;;\033\\'
 
     return escape_mask.format(parameters, uri, label)
+
 
 def search_file(file_path: str, file_name: str, search_phrase: str) -> None:
 
@@ -22,8 +24,9 @@ def search_file(file_path: str, file_name: str, search_phrase: str) -> None:
     with open(file_path, 'r') as f:
         searchlines = f.readlines()
     for i, line in enumerate(searchlines):
-        if search_phrase in line: 
-            for l in searchlines[i:i+3]: print (l),
+        if search_phrase in line:
+            for line in searchlines[i:i+3]:
+                print(line),
             print
 
 
@@ -37,11 +40,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     files_in_dir = os.listdir(transcribe_folder)
 
     for file in files_in_dir:
-        search_file(os.path.join(transcribe_folder, file), file, args.search_phrase)
-
-
+        search_file(os.path.join(transcribe_folder, file),
+                    file, args.search_phrase)
 
 
 if __name__ == '__main__':
     SystemExit(main())
-
