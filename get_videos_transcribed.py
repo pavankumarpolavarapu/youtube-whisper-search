@@ -21,8 +21,8 @@ def transcribe_single_video(video_file_path: str,
             print(f"video already transcribed")
 
     except Exception as e:
-        print("An exception has occurred")
-        raise
+        print(f"An exception has occurred: {e}")
+        return 1
 
     return 0
 
@@ -30,15 +30,25 @@ def transcribe_single_video(video_file_path: str,
 def main(*args: str) -> int:
     videos_folder = f"{os.getcwd()}/videos"
     transcribe_folder = f"{os.getcwd()}/transcribed"
-    files_in_dir = os.listdir(videos_folder)
+    valid_extensions = ('.mp4', '.webm', '.mkv', '.avi', '.mov', '.flv')
+    for root, dirs, files in os.walk(videos_folder):
+        for file in files:
+            if not file.lower().endswith(valid_extensions):
+                continue
+            video_file_path = os.path.join(root, file)
+            rel_path = os.path.relpath(root, videos_folder)
 
-    for file in files_in_dir:
-        video_file_path = os.path.join(videos_folder, file)
-        videoId, _, _ = file.partition(".")
-        transcribe_file_path = \
-            os.path.join(transcribe_folder, f"{videoId}.txt")
+            if rel_path == ".":
+                target_dir = transcribe_folder
+            else:
+                target_dir = os.path.join(transcribe_folder, rel_path)
 
-        transcribe_single_video(video_file_path, transcribe_file_path)
+            os.makedirs(target_dir, exist_ok=True)
+
+            file_name_without_ext = os.path.splitext(file)[0]
+            transcribe_file_path = os.path.join(target_dir, f"{file_name_without_ext}.txt")
+
+            transcribe_single_video(video_file_path, transcribe_file_path)
 
 
 if __name__ == '__main__':

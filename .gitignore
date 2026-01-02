@@ -1,5 +1,7 @@
 *.env
-videos/*.mp4
-transcribed/*.txt
+videos/*
+transcribed/*
 *.pyc
 *.swp
+*.mp4
+*.webm

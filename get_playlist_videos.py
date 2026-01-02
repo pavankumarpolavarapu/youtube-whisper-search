@@ -22,12 +22,13 @@ def download_multiple_youtube_videos(
     downloaded_video_paths = []
     try:
         for item in playlist_videos:
-            file_path = f"{os.getcwd()}/videos/{playlist}/{item[0]}.mp4"
-            Path(os.path.dirname(file_path)).mkdir(parents=True, exist_ok=True)
-            if not os.path.isfile(file_path):
+            file_dir = f"{os.getcwd()}/videos/{playlist}"
+            file_name = item[0]
+            Path(os.path.dirname(file_dir)).mkdir(parents=True, exist_ok=True)
+            if not os.path.isfile(file_dir):
                 try:
-                    if (download_single_youtube_video(item[1], file_path)):
-                        downloaded_video_paths.append(file_path)
+                    download_single_youtube_video(item[1], file_dir, file_name)
+                    #downloaded_video_paths.append()
                 except yt_dlp.DownloadError:
                     print(f"Error while downloading {item[1]}")
     except Exception:
@@ -37,7 +38,7 @@ def download_multiple_youtube_videos(
     return downloaded_video_paths
 
 
-def download_single_youtube_video(url: str, file_path: str) -> str:
+def download_single_youtube_video(url: str, file_dir: str, file_name: str) -> str:
     """Save a YouTube video URL to mp3.
 
     Args:
@@ -48,8 +49,9 @@ def download_single_youtube_video(url: str, file_path: str) -> str:
     """
 
     options = {
-        'format': 'mp4/bestvideo*+bestaudio/best',
-        'outtmpl': file_path,
+        'format': 'bestvideo+bestaudio/best',
+        'outtmpl': f'{file_dir}/%(upload_date)s - {file_name}.%(ext)s',
+        'merge_output_format': 'mp4',
         'logger': MyLogger(),
     }
 
@@ -59,7 +61,7 @@ def download_single_youtube_video(url: str, file_path: str) -> str:
     except Exception:
         raise
 
-    return file_path
+    return file_dir+file_name
 
 
 def get_google_api_client(
@@ -93,7 +95,7 @@ def get_youtube_playlist_videos(
     for item in response['items']:
         videoId: str = item['contentDetails']['videoId']
         youtube_url = f"https://youtube.com/watch?v={videoId}"
-
+        
         playlist_videos.append([videoId, youtube_url])
 
     if 'nextPageToken' in response.keys():
@@ -109,11 +111,14 @@ def get_youtube_playlist_videos(
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('playlist_id')
+    parser.add_argument('--playlist_id')
+    parser.add_argument('--list_videos')
+    parser.add_argument('--no_download')
     load_dotenv()
     developer_key = os.getenv('developer_key')
     args = parser.parse_args(argv)
 
+    playlist_videos = []
     api_service_name = 'youtube'
     api_version = 'v3'
 
@@ -123,13 +128,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     if (service):
         playlist_videos = \
             get_youtube_playlist_videos(service, args.playlist_id, None, [])
-
-    if (playlist_videos):
+    
+    if (args.list_videos is not None):
+        for item in playlist_videos:
+            print(item[1])
+    
+    if (len(playlist_videos) >= 1 and args.no_download is None ):
         downloaded_video_paths = \
             download_multiple_youtube_videos(args.playlist_id, playlist_videos)
 
-    for video_path in downloaded_video_paths:
-        print(video_path)
+        #for video_path in downloaded_video_paths:
+        #print(video_path)
 
     return 0
 
