@@ -1,0 +1,16 @@
+[project]
+name = "youtube-whisper-search"
+version = "0.1.0"
+description = "Search YouTube videos using Whisper transcriptions"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-api-python-client==2.192.0",
+    "openai-whisper==20250625",
+    "python-dotenv==1.2.2",
+    "torch==2.10.0",
+    "yt-dlp==2026.3.3",
+]
+
+[dependency-groups]
+dev = []
